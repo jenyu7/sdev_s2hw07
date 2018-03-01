@@ -5,10 +5,7 @@
  * K#01: It's about CONNECTION
  */
 
-var canvas = document.getElementById("slate");
-var height = canvas.getAttribute("height");
-var width = canvas.getAttribute("width");
-var ctx = canvas.getContext("2d"); // set context to 2d
+var svg = document.getElementById("slate");
 
 var toggle = document.getElementById("toggle");
 var clear = document.getElementById("clear");
@@ -33,8 +30,9 @@ var toggleCallBack = function(e){
 //variables to store (x,y) of previous circle
 var prevX, prevY = null;
 
-var canvasCallBack = function(e){
+var svgCallBack = function(e){
     e.preventDefault();
+    if (e.target != svg){return;}
     var cors = [];
     //draw dots based on state
     if (state == 0)
@@ -50,11 +48,13 @@ var canvasCallBack = function(e){
     //draw a line from previous circle to the new circle
     //stroke (so the line appears)
     if (prevX != null && prevY != null){
-	ctx.beginPath();
-	ctx.moveTo(prevX, prevY);
-	ctx.lineTo(cors[0], cors[1]);
-	ctx.stroke();
-	ctx.closePath();
+	var l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+	l.setAttribute("x1", prevX);
+	l.setAttribute("y1", prevY);
+	l.setAttribute("x2", cors[0]);
+	l.setAttribute("y2", cors[1]);
+	l.setAttribute("stroke", "black");
+	svg.appendChild(l);
     }
     console.log(cors);
     //circle just drawn -> store coordinates for next drawn circle
@@ -64,26 +64,37 @@ var canvasCallBack = function(e){
 
 //draws a dot, returns the x and y coordinates in a list
 var drawDot = function(x, y){
-    ctx.fillStyle = "#ff0000";
-    ctx.beginPath();
-    ctx.arc(x,y,20,0,2*Math.PI);
-    ctx.fill();
-    ctx.closePath();
+    var c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    c.setAttribute("cx", x);
+    c.setAttribute("cy", y);
+    c.setAttribute("r", 10);
+    c.setAttribute("fill", "red");
+    c.setAttribute("stroke", "black");
+    svg.appendChild(c);
     return [x, y]
 };
 
 //clears the screen and resets the prevX and prevY variables
 var clearCallBack = function(e){
-    console.log("cleared");
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0,0,600,600);
+    /*
+    var rect = document.createElementNS("http://www.w3.org/2000/svg","rect");
+    rect.setAttribute("x", 0);
+    rect.setAttribute("y", 0);
+    rect.setAttribute("width", 500);
+    rect.setAttribute("height", 500);
+    rect.setAttribute("fill", "white");
+    svg.appendChild(rect);
+    console.log("cleared");*/
+    while(svg.firstChild){
+	svg.removeChild(svg.firstChild);
+    }
     prevX, prevY = null;
 };
 
 //add the event listeners
 toggle.addEventListener("click", toggleCallBack);
 clear.addEventListener("click", clearCallBack);
-canvas.addEventListener("click", canvasCallBack);
+svg.addEventListener("click", svgCallBack);
 
 
 /*
